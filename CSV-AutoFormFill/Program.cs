@@ -14,21 +14,26 @@ namespace CSV_AutoFormFill
         static void Main(string[] args)
         {
             IWebDriver driver;
-            driver = new ChromeDriver();
-            driver.Navigate().GoToUrl("https://www.activepdf.com/products/ocr/download?hsCtaTracking=e71ff45f-425f-43cd-a196-e20f6fe59774%7C2acbcf88-0cf5-44e5-a98c-e4e8dfd58457");
-
-            string[] tfSelectors = { "[name*='firstname']", "[name*='lastname']", "[name*='email']", "[name*='phone']", "[name*='company_initial_form_submission']" };
             string[][] profiles = ReadCSV_GetValues();
-            int i;
-            for(i = 0; i<tfSelectors.Count(); i++)
+
+            for (int j = 0; j < profiles.Count(); j++)
             {
-                TextInput(driver, tfSelectors[i], profiles[0][i]);
-            };
+                driver = new ChromeDriver();
+                driver.Navigate().GoToUrl("https://www.activepdf.com/products/ocr/download?hsCtaTracking=e71ff45f-425f-43cd-a196-e20f6fe59774%7C2acbcf88-0cf5-44e5-a98c-e4e8dfd58457");
 
-            Dropdown(driver, profiles[0][++i]);
-            ProjectTimeline(driver, profiles[0][++i]);
-            Consent(driver);
+                string[] tfSelectors = { "[name*='firstname']", "[name*='lastname']", "[name*='email']", "[name*='phone']", "[name*='company_initial_form_submission']" };
+                int i;
+                for (i = 0; i < tfSelectors.Count(); i++)
+                {
+                    TextInput(driver, tfSelectors[i], profiles[j][i]);
+                };
 
+                Dropdown(driver, profiles[j][i]);
+                ProjectTimeline(driver, profiles[j][++i]);
+                SelectOption(driver, profiles[j][++i]);
+                Consent(driver);
+                driver.Quit();
+            }
         }
 
         public static void Consent(IWebDriver driver)
@@ -40,14 +45,15 @@ namespace CSV_AutoFormFill
 
         public static void SelectOption(IWebDriver driver, string index)
         {
-            IWebElement radio = Wait(driver, $"[name*='free_trial_option']:nth-child(${index})");
-            radio.Click();
+            string selector = @"$(""[name*='free_trial_option']"")[" + index + "]";
+
+            jQueryClick(driver, selector);
         }
 
         public static void ProjectTimeline(IWebDriver driver, string index)
         {
-            IWebElement radio = Wait(driver, $"[name*='project_timeline']:nth-child(${index})");
-            radio.Click();
+            string selector = @"$(""[name*='project_timeline']"")["+index+"]";
+            jQueryClick(driver, selector);
         }
 
         public static void Dropdown(IWebDriver driver, string index)
@@ -55,6 +61,13 @@ namespace CSV_AutoFormFill
             IWebElement describeYourself = Wait(driver, "[name*='hs_persona']");
             SelectElement dropdown = new SelectElement(describeYourself);
             dropdown.SelectByIndex(Convert.ToInt32(index));
+        }
+
+        public static void jQueryClick(IWebDriver driver, string selector)
+        {
+            IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+            string script = "$(" + selector + ").trigger('click')";
+            js.ExecuteScript(script);
         }
 
         //Will explicitly wait until element is found.
