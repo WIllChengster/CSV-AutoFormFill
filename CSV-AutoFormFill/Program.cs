@@ -32,6 +32,9 @@ namespace CSV_AutoFormFill
                 ProjectTimeline(driver, profiles[j][++i]);
                 SelectOption(driver, profiles[j][++i]);
                 Consent(driver);
+
+                //This is the download button
+                //driver.FindElement(By.CssSelector("[type*='submit']"));
                 driver.Quit();
             }
         }
